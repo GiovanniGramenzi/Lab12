@@ -64,3 +64,46 @@ class Model:
 
     """Implementare la parte di ricerca del cammino minimo"""
     # TODO
+    def get_cammino_minimo_nx(self,soglia):
+        G1=nx.Graph()
+        for u,v,w in self.G.edges(data='weight'):
+            if w>soglia:
+                G1.add_edge(u,v,weight=w)
+        best_path=[]
+        best_cost=float('inf')
+        for s in G1.nodes():
+            dist,paths=nx.single_source_dijkstra(G1,s,weight='weight') #dist:dict{node:costomin} paths:dict{node:lista_nodi_cammino}
+            for t,cost in dist.items():
+                path=paths[t]
+                if len(path)>=3 and cost<best_cost:
+                    best_cost=cost
+                    best_path=path
+        return best_path,best_cost
+    def cammino_min_recursive(self,nodo_corrente,cammino:list,costo:float,visitati:set):
+        if costo>=self.best_costo:
+            return
+        if len(cammino)>=3:
+            self.best_costo=costo
+            self.best_path=list(cammino)
+        for vicino in self.Gf.neighbors(nodo_corrente):
+            if vicino not in visitati:
+                visitati.add(vicino)
+                cammino.append(vicino)
+                nuovo_costo=costo+float(self.Gf[nodo_corrente][vicino]['weight'])
+                self.cammino_min_recursive(vicino,cammino,nuovo_costo,visitati)
+                cammino.pop()
+                visitati.remove(vicino)
+
+
+
+    def get_cammino_minimo_recursive(self,soglia):
+        self.Gf=nx.Graph()
+        for u,v,w in self.G.edges(data='weight'):
+            if w>soglia:
+                self.Gf.add_edge(u,v,weight=w)
+        self.best_path=[]
+        self.best_costo=float('inf')
+        for nodo in self.Gf.nodes():
+            self.cammino_min_recursive(nodo,[nodo],0,{nodo})
+        return self.best_path,self.best_costo
+
